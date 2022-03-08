@@ -13,7 +13,6 @@
 /WebContent/
 sm-shop/SALESMANAGER.lock.db
 .DS_Store
-*/sm-shop/**
 .project
 sm-admin/**/rebel*.xml
 sm-shop/**/rebel*.xml
