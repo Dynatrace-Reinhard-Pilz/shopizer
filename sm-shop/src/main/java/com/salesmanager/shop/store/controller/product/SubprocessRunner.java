@@ -14,9 +14,9 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 @Component
-public class GoRunner implements CommandLineRunner {
+public class SubprocessRunner implements CommandLineRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GoRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubprocessRunner.class);
 
 	private static class StreamGobbler implements Runnable {
 	    private InputStream inputStream;
@@ -38,6 +38,7 @@ public class GoRunner implements CommandLineRunner {
         LOGGER.info("[PROCESS OUTPUT] " + msg);
     }   
 
+
     @Override
     public void run(String... args) {
         Thread thread = new Thread() {
@@ -46,15 +47,21 @@ public class GoRunner implements CommandLineRunner {
                     Path currentRelativePath = Paths.get("");
                     String s = currentRelativePath.toAbsolutePath().toString();
                     LOGGER.info("Current absolute path is: " + s);
-                    File gosrvc = new File(new File(s).getParentFile(), "gosrvc");
+                    // For Go service uncomment:
+                    // File workdir = new File(new File(s).getParentFile(), "gosrvc");
+                    // For Python service uncomment:
+                    File workdir = new File(new File(s).getParentFile(), "pysrvc");
                     ProcessBuilder builder = new ProcessBuilder();
-                    builder.command("go", "run", ".");
-                    builder.directory(gosrvc);
+                    builder.directory(workdir);
+                    // For Go service uncomment:
+                    // builder.command("go", "run", ".")
+                    // For Python service uncomment:
+                    builder.command("python3", "main.py");                    
                     Process process = builder.start();
-                    StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), GoRunner::info);
+                    StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), SubprocessRunner::info);
                     Executors.newSingleThreadExecutor().submit(streamGobbler);
                     int exitCode = process.waitFor();
-                    LOGGER.info("GoRunner exiting");
+                    LOGGER.info("Runner exiting");
                 } catch (Throwable thrown) {
                     thrown.printStackTrace(System.err);
                 }
