@@ -29,3 +29,6 @@ sm-shop/.project
 .DS_Store
 
 .mvnw/*.jar
+
+# Exceptions
+!sm-shop/lib/**
