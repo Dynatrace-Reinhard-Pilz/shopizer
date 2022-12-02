@@ -6,3 +6,4 @@ opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-requests
 opentelemetry-sdk
 opentelemetry-semantic-conventions
+psutil
