@@ -27,6 +27,7 @@ sm-shop/.project
 **/.settings
 **/.classpath
 .DS_Store
+**venv**
 
 .mvnw/*.jar
 
