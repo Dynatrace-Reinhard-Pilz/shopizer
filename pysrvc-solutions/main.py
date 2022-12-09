@@ -9,17 +9,23 @@ from otel import ot
 
 
 app = Flask("Py-Flask-App")
+FlaskInstrumentor.instrument_app(app)
 
 
 @app.route("/newroute", methods=["GET"])
 def newroute():
-    requests.get("http://localhost:8080/shop")
-    return make_response({}, 200)
+    with ot.tracer.start_as_current_span("local route"):
+        ctx = context.get_current()
+        headers = {}
+        propagate.inject(headers, ctx)
+        requests.get("http://localhost:8080/shop", headers=headers)
+        return make_response({}, 200)
 
 
 @app.route("/quote", methods=["GET"])
 def quote():
     with ot.tracer.start_as_current_span("quote") as span:
+        trace.set_span_in_context(span, propagate.extract(request.headers))
         ot.metrics["requests_count"].add(1, {"request": "/quote"})
         process(random.randint(0, 25))
         return make_response({}, 200)
@@ -27,9 +33,11 @@ def quote():
 
 @app.route("/calc", methods=["GET"])
 def calc():
-    ot.metrics["requests_count"].add(1, {"request": "/calc"})
-    process(random.randint(0, 25))
-    return make_response({}, 200)
+    with ot.tracer.start_as_current_span("calc") as span:
+        trace.set_span_in_context(span, propagate.extract(request.headers))
+        ot.metrics["requests_count"].add(1, {"request": "/calc"})
+        process(random.randint(0, 25))
+        return make_response({}, 200)
 
 
 def main():

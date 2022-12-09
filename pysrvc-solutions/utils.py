@@ -24,9 +24,12 @@ def fibonacci(n: int) -> int:
 def process(n: int) -> int:
     with ot.tracer.start_as_current_span("process") as span:
         try:
+            span.set_attribute("n", n)
+            span.add_event("Calculating Fibonnaci", {"n": n})
             start = datetime.now()
             f = fibonacci(n)
             duration = (datetime.now().timestamp() - start.timestamp())*1000
+            ot.metrics["process_duration"].record(duration, {"number": n})
             return f
         except Exception as e:
             span.record_exception(e)
