@@ -36,6 +36,11 @@ class CustomOpenTelemetry():
             "requests_count",
             "Counts the number of requests to the service"
         )
+        self.create_histogram_instrument(
+            "process_duration",
+            "Duration of Fibonacci calculation, in milliseconds",
+            "ms"
+        )
 
     """Returns a resource properties describing this application."""
     def get_resource_props(self):
@@ -89,6 +94,13 @@ class CustomOpenTelemetry():
             unit="1"
         )
 
+    """Creates a synchronous histogram instrument with given details"""
+    def create_histogram_instrument(self, name: str, description: str, unit: str):
+        self.metrics[name] = self.meter.create_histogram(
+            name=name,
+            description=description,
+            unit=unit
+        )
 
 # Sets everything up and can be reused anywhere in the code
 ot = CustomOpenTelemetry()
