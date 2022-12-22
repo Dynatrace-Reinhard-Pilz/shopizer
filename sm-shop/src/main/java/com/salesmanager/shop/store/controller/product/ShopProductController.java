@@ -77,6 +77,28 @@ import io.opentelemetry.api.common.Attributes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.concurrent.ThreadLocalRandom;
+import java.lang.reflect.Type;
+import org.springframework.web.socket.client.WebSocketConnectionManager;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.frame.Jackson2SockJsMessageCodec;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.messaging.simp.stomp.StompSessionHandler;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompFrameHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
+
 
 /**
  * Populates the product details page
@@ -88,8 +110,12 @@ import org.springframework.web.client.RestTemplate;
 @SuppressWarnings("unused")
 public class ShopProductController {
 
+	private static final String USER_ID = UUID.randomUUID().toString();
+
 	public void handleQuote(final String reference) {
-		HttpUtil.Get("http://127.0.0.1:8090/quote");						
+		HttpUtil.Get("http://127.0.0.1:8090/quote");
+
+		MessageClientRunner.getSession().send("/app/chat/java", new ClientMessage(USER_ID, reference));
 	}
 
 	public void calcPrice(Model model) {
@@ -103,8 +129,6 @@ public class ShopProductController {
 		}
 	}
 
-
-	@SuppressWarnings("unchecked")
 	public String display(final String reference, final String friendlyUrl, Model model, HttpServletRequest request, HttpServletResponse response, Locale locale) throws Exception {
 		handleQuote(reference);
 		calcPrice(model);
