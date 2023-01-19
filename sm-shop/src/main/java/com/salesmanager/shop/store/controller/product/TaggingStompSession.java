@@ -9,11 +9,15 @@ import org.springframework.messaging.simp.stomp.StompSession;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapSetter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -21,6 +25,8 @@ import io.opentelemetry.context.propagation.TextMapSetter;
  *
  */
 public final class TaggingStompSession implements StompSession, TextMapSetter<StompHeaders> {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(TaggingStompSession.class);
 	
 	private final StompSession session;
 	
@@ -43,10 +49,12 @@ public final class TaggingStompSession implements StompSession, TextMapSetter<St
     
 	@Override
 	public Receiptable send(StompHeaders headers, Object payload) {
-		Tracer tracer = GlobalOpenTelemetry.getTracer("shop-product", "1.0.0");
+		Tracer tracer = GlobalOpenTelemetry.getTracer("java-websocket", "1.0.0");
 		Span span = tracer.spanBuilder("SEND " + headers.getDestination()).setSpanKind(SpanKind.PRODUCER).setAttribute("messaging.destination", headers.getDestination()).startSpan();
 		try (Scope scope = span.makeCurrent()) {
+			SpanContext spanContext = Span.current().getSpanContext();
 			GlobalOpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), headers, this);		
+			LOGGER.info("[!dt dt.trace_id=" + spanContext.getTraceId() + ",dt.span_id=" + spanContext.getSpanId() + "] sending message to " + headers.getDestination());
 			return session.send(headers, payload);
 		} finally {
 			span.end();

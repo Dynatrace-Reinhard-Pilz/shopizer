@@ -119,14 +119,7 @@ public class ShopProductController {
 	}
 
 	public void calcPrice(Model model) {
-		Span span = getTracer().spanBuilder("calc")
-		.setAttribute("model", model.toString())
-		.startSpan();
-		try (Scope scope = span.makeCurrent()) {
-			HttpUtil.Get("http://127.0.0.1:8090/calc");						
-		} finally {
-			span.end();
-		}
+		HttpUtil.Get("http://127.0.0.1:8090/calc");						
 	}
 
 	public String display(final String reference, final String friendlyUrl, Model model, HttpServletRequest request, HttpServletResponse response, Locale locale) throws Exception {
@@ -135,7 +128,7 @@ public class ShopProductController {
 		this.metrics.referenceCounter().add(random.nextInt(10), Attributes.of(stringKey("reference"), reference));
 
 		String result = display0(reference, friendlyUrl, model, request, response, locale);
-		HttpUtil.Get("http://127.0.0.1:8080/call-lambda");
+		// HttpUtil.Get("http://127.0.0.1:8080/call-lambda");
 		return result;
 	}
 
