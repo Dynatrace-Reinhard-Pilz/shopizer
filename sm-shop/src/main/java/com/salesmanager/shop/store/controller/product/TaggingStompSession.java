@@ -52,9 +52,9 @@ public final class TaggingStompSession implements StompSession, TextMapSetter<St
 		Tracer tracer = GlobalOpenTelemetry.getTracer("java-websocket", "1.0.0");
 		Span span = tracer.spanBuilder("SEND " + headers.getDestination()).setSpanKind(SpanKind.PRODUCER).setAttribute("messaging.destination", headers.getDestination()).startSpan();
 		try (Scope scope = span.makeCurrent()) {
-			SpanContext spanContext = Span.current().getSpanContext();
+			// SpanContext spanContext = Span.current().getSpanContext();
 			GlobalOpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), headers, this);		
-			LOGGER.info("[!dt dt.trace_id=" + spanContext.getTraceId() + ",dt.span_id=" + spanContext.getSpanId() + "] sending message to " + headers.getDestination());
+			// LOGGER.info("[!dt dt.trace_id=" + spanContext.getTraceId() + ",dt.span_id=" + spanContext.getSpanId() + "] sending message to " + headers.getDestination());
 			return session.send(headers, payload);
 		} finally {
 			span.end();
